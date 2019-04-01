@@ -1,0 +1,78 @@
+connect to sample;
+
+--1 What is the build date of the airplanes that have flown in 2014?
+
+select DISTINCT aircraft_registration,build_date from Airplanes,Tickets where Aircraft_registration=aircraft_id AND year(Flight_Date) = 2014;
+
+--2 How many passengers born in the 70’s that have flown to Paris?
+
+select count(DISTINCT Passenger_ID) AS Number_of_people_born_in_70s_and_flown_to_Paris
+from passengers,tickets,routes 
+where ID=Passenger_ID 
+  AND Tickets.Route_code=Routes.Route_code 
+  AND year(birth_date) Between 1970 AND 1979 
+  AND DESTINATION = 'Paris'; 
+
+--3 Telephone number of the oldest passenger
+
+Select NAME,ID,TELEPHONE,BIRTH_DATE
+  FROM PASSENGERS
+    WHERE BIRTH_DATE = (SELECT MIN(BIRTH_DATE) FROM PASSENGERS);
+
+--4 How many airplanes have more than 300 seats and tickets more expensive than 1000€.
+
+SELECT COUNT(DISTINCT AIRCRAFT_REGISTRATION) AS NUMBER_OF_PLANES
+  FROM AIRPLANES,ROUTES,TICKETS
+    WHERE AIRCRAFT_REGISTRATION = AIRCRAFT_ID
+      AND TICKETS.ROUTE_CODE = ROUTES.ROUTE_CODE
+      AND SEATS > 300
+      AND PRICE > 1000;
+
+--5  Find the tickets of all the flights to Toronto in planes build before 2010 for passengers --born after 2000.
+
+SELECT TICKET_ID,BUILD_DATE,BIRTH_DATE,DESTINATION
+  FROM AIRPLANES,PASSENGERS,TICKETS,ROUTES
+    WHERE TICKETS.ROUTE_CODE = ROUTES.ROUTE_CODE
+      AND ID = PASSENGER_ID
+      AND AIRCRAFT_REGISTRATION = AIRCRAFT_ID
+      AND YEAR(BUILD_DATE) < 2010
+      AND YEAR(BIRTH_DATE) > 2000
+      AND DESTINATION = 'Toronto';
+
+--6 Obtain the routes that their price is lower than the average price of all the routes with the same origin.
+
+SELECT *
+  FROM ROUTES
+    WHERE PRICE < ALL (SELECT AVG(PRICE) FROM ROUTES GROUP BY ORIGIN);
+
+--7 For each origin how many tickets have been sold only for the tickets more expensive --than 300€.
+
+SELECT ORIGIN, COUNT(TICKET_ID) AS NUMBER_OF_TICKETS
+  FROM ROUTES,TICKETS
+    WHERE ROUTES.ROUTE_CODE = TICKETS.ROUTE_CODE
+      AND PRICE > 300
+  GROUP BY ORIGIN;
+
+--8 How much money has the company earned selling tickets?
+
+SELECT SUM(PRICE) AS REVENUE
+  FROM TICKETS,ROUTES
+    WHERE TICKETS.ROUTE_CODE = ROUTES.ROUTE_CODE;
+
+--9  List the price of each tickets order by price appearing first the more expensive.
+
+SELECT TICKET_ID,PRICE
+  FROM TICKETS,ROUTES
+    WHERE TICKETS.ROUTE_CODE = ROUTES.ROUTE_CODE
+      ORDER BY PRICE DESC;
+
+--10 Obtain the name and telephone of the passenger that flew the route R7203 the --12/28/2005 in planes with more than 300 seats.
+
+SELECT NAME,TELEPHONE
+  FROM PASSENGERS,TICKETS,AIRPLANES
+    WHERE ID = PASSENGER_ID
+      AND AIRCRAFT_ID = AIRCRAFT_REGISTRATION
+      AND ROUTE_CODE = 'R7203'
+      AND FLIGHT_DATE = '12/28/2005'
+      AND SEATS > 300;
+
